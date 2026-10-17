@@ -26,7 +26,7 @@ test('published HTML and its whole module graph use one cache version', async ()
 test('the release contains only runtime files and generated audio', () => {
   assert.equal(new Set(PUBLIC_FILES).size, PUBLIC_FILES.length);
   for (const file of PUBLIC_FILES) {
-    assert.match(file, /^(index\.html|style\.css|src\/[a-z]+\.js|assets\/favicon\.svg|assets\/audio\/poyo-pop\.(wav|mp3))$/);
+    assert.match(file, /^(index\.html|style\.css|src\/[a-z]+\.js|assets\/favicon\.svg|assets\/apple-touch-icon\.png|assets\/audio\/poyo-pop\.(wav|mp3))$/);
   }
 });
 

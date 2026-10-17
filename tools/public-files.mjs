@@ -9,6 +9,7 @@ export const PUBLIC_FILES = [
   'src/scene.js',
   'src/sounds.js',
   'assets/favicon.svg',
+  'assets/apple-touch-icon.png',
   'assets/audio/poyo-pop.wav',
   'assets/audio/poyo-pop.mp3',
 ];
