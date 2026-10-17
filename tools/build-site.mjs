@@ -1,4 +1,5 @@
-import { copyFile, lstat, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PUBLIC_FILES } from './public-files.mjs';
@@ -24,11 +25,29 @@ for (const relative of PUBLIC_FILES) {
   if (!(await lstat(current)).isFile()) throw new Error(`Not a file: ${relative}`);
 }
 
+const digest = createHash('sha256');
+for (const relative of PUBLIC_FILES) {
+  digest.update(relative).update(await readFile(resolve(root, relative)));
+}
+const version = digest.digest('hex').slice(0, 12);
+
 await rm(output, { recursive: true, force: true });
 for (const relative of PUBLIC_FILES) {
   const destination = resolve(output, relative);
   await mkdir(dirname(destination), { recursive: true });
-  await copyFile(resolve(root, relative), destination);
+  if (relative.endsWith('.js') || relative === 'index.html') {
+    let source = await readFile(resolve(root, relative), 'utf8');
+    if (relative.endsWith('.js')) {
+      // One version across the module graph prevents old and new sound engines
+      // from being mixed by a browser's still-fresh asset cache after an update.
+      source = source.replace(/from (['"])(\.\.?\/[^'"?]+\.js)\1/g, (_, quote, path) => `from ${quote}${path}?v=${version}${quote}`);
+    } else {
+      source = source.replace(/(href|src)="(\.\/[^"?]+\.(css|js|svg))"/g, (_, attribute, path) => `${attribute}="${path}?v=${version}"`);
+    }
+    await writeFile(destination, source);
+  } else {
+    await copyFile(resolve(root, relative), destination);
+  }
 }
 await writeFile(resolve(output, '.nojekyll'), '');
 console.log(`Prepared ${PUBLIC_FILES.length} application files in dist/.`);

@@ -1,10 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import { PUBLIC_FILES } from '../tools/public-files.mjs';
 import { SOUNDS } from '../src/sounds.js';
 
 const root = new URL('../', import.meta.url);
+const runFile = promisify(execFile);
+
+test('published HTML and its whole module graph use one cache version', async () => {
+  await runFile(process.execPath, ['tools/build-site.mjs'], { cwd: fileURLToPath(root) });
+  const html = await readFile(new URL('dist/index.html', root), 'utf8');
+  const version = html.match(/style\.css\?v=([a-f0-9]{12})/)[1];
+  assert.ok(html.includes(`src/app.js?v=${version}`));
+  for (const file of PUBLIC_FILES.filter(file => file.endsWith('.js'))) {
+    const js = await readFile(new URL(`dist/${file}`, root), 'utf8');
+    for (const match of js.matchAll(/from ['"]([^'"]+)['"]/g)) {
+      assert.ok(match[1].endsWith(`?v=${version}`), `Stale module import in ${file}`);
+      assert.ok(PUBLIC_FILES.includes(`src/${match[1].split('?')[0].slice(2)}`));
+    }
+  }
+});
 test('the release contains only runtime files and generated audio', () => {
   assert.equal(new Set(PUBLIC_FILES).size, PUBLIC_FILES.length);
   for (const file of PUBLIC_FILES) {
