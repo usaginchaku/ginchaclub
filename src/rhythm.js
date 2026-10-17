@@ -2,7 +2,8 @@ export const BPM = 128;
 export const BEAT = 60 / BPM;
 export const SONG_BEATS = 128;
 export const LOOP_BEATS = 16;
-export const STEPS_PER_BEAT = 4;
+// Live notes land on the same quarter-note pulse as the backing track's kick.
+export const STEPS_PER_BEAT = 1;
 export const STEP_SECONDS = BEAT / STEPS_PER_BEAT;
 export const LOOP_STEPS = LOOP_BEATS * STEPS_PER_BEAT;
 export const mod = (value, length) => ((value % length) + length) % length;

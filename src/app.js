@@ -1,6 +1,7 @@
 import { SoundEngine } from './audio.js';
 import { UsaginchakuScene } from './scene.js';
 import { LOOP_BEATS, STEPS_PER_BEAT, mod } from './rhythm.js';
+import { SOUNDS } from './sounds.js';
 
 const $ = selector => document.querySelector(selector);
 const engine = new SoundEngine();
@@ -153,7 +154,7 @@ document.addEventListener('keydown', event => {
     event.preventDefault();
     togglePlayback();
   } else {
-    const sound = ['KeyA', 'KeyS', 'KeyD', 'KeyF'].indexOf(event.code);
+    const sound = SOUNDS.findIndex(tone => tone.key === event.code);
     if (sound !== -1) { event.preventDefault(); playHit(sound); }
   }
 });
@@ -176,12 +177,14 @@ function frame(timestamp) {
     lastBeat = wholeBeat;
   }
   if (engine.playing) {
-    while (engine.visualHits.length && engine.visualHits[0].when <= engine.context.currentTime) {
+    const audibleTime = engine.playbackTime;
+    while (engine.visualHits.length && engine.visualHits[0].when <= audibleTime) {
       const hit = engine.visualHits.shift();
       scene.hit(hit.sound, hit.position?.x, hit.position?.y);
       flashPad(hit.sound);
     }
   }
+  pads.forEach((pad, sound) => pad.classList.toggle('queued', engine.visualHits.some(hit => hit.kind === 'live' && hit.sound === sound)));
   scene.draw(beat, engine.playing, timestamp / 1000);
   requestAnimationFrame(frame);
 }

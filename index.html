@@ -24,15 +24,19 @@
         <div class="beat-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       </section>
       <section class="instrument" aria-label="演奏コントロール">
-        <div class="transport">
-          <button id="play" class="play-button"><svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span id="play-label">あそぶ</span></button>
-          <div class="volume"><button class="icon-button" id="mute" aria-label="ミュート" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 4-5 5H3v6h3l5 5ZM16 8q4 4 0 8m3-11q7 7 0 14"/></svg></button><input id="volume" aria-label="音量" type="range" min="0" max="100" value="65"></div>
-        </div>
         <div class="pad-row" role="group" aria-label="タップする音を選んで演奏">
           <button class="pad selected" data-sound="0" aria-pressed="true"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M7 24q-3-15 14-15t14 15ZM11 27h20"/></svg><span>ぽよ</span></button>
           <button class="pad" data-sound="1" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="m21 3 4 10 11 3-11 4-4 10-4-10-11-4 11-3Z"/></svg><span>きら</span></button>
           <button class="pad" data-sound="2" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><circle cx="16" cy="20" r="9"/><circle cx="30" cy="8" r="5"/></svg><span>ぷく</span></button>
           <button class="pad" data-sound="3" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M5 25C10 25 10 7 20 7S30 25 37 5M28 5h9v9"/></svg><span>ぴゅん</span></button>
+          <button class="pad" data-sound="4" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M5 25V15h10V8h11V3h11M5 28h32"/></svg><span>ぴこ</span></button>
+          <button class="pad" data-sound="5" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="m21 3 3 9 10-4-5 10 8 5-12 1-4 7-4-7-12-1 8-5-5-10 10 4Z"/></svg><span>ぱち</span></button>
+          <button class="pad" data-sound="6" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M12 25C4 21 10 14 15 15c-3-4 3-6 3-11 8 2 11 8 8 12 10 8 0 15-14 9ZM10 27h24"/></svg><span>ころころ</span></button>
+          <button class="pad" data-sound="7" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M6 10q5-7 10 0t10 0t10 0M6 21q5-7 10 0t10 0t10 0"/></svg><span>しゅわ</span></button>
+        </div>
+        <div class="transport">
+          <button id="play" class="play-button"><svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span id="play-label">あそぶ</span></button>
+          <div class="volume"><button class="icon-button" id="mute" aria-label="ミュート" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 4-5 5H3v6h3l5 5ZM16 8q4 4 0 8m3-11q7 7 0 14"/></svg></button><input id="volume" aria-label="音量" type="range" min="0" max="100" value="65"></div>
         </div>
         <div class="loop-row">
           <button class="loop-button" id="loop" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></svg><span>くりかえす</span><i aria-hidden="true"></i></button>
@@ -45,9 +49,10 @@
   <dialog id="about" aria-labelledby="about-title">
     <div class="dialog-top"><h2 id="about-title">ぎんちゃくらぶ</h2><button class="icon-button" id="close-about" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div>
     <h3>あそび方</h3>
-    <p>うさぎんちゃくや、下の4つのボタンをタップ。音はビートに合わせて鳴ります。</p>
+    <p>うさぎんちゃくや、8つの音ボタンをタップ。音は曲の「1・2・3・4」の拍に揃って鳴ります。ボタンの小さな点は、次の拍を待っているしるしです。</p>
+    <p>「ころころ」を押すと、小さなうんちが足もとからコロコロ。くりかえしに入れることもできます。</p>
     <p>「くりかえす」をオンにすると、タップした音を4小節ごとにくりかえします。「消す」で重ねた音をリセットできます。</p>
-    <dl><dt>キーボード</dt><dd>Space：再生・一時停止<br>A / S / D / F：演奏</dd></dl>
+    <dl><dt>キーボード</dt><dd>Space：再生・一時停止<br>A / S / D / F：上の4音<br>G / H / J / K：下の4音</dd></dl>
     <h3>曲とキャラクター</h3>
     <dl><dt>キャラクター</dt><dd>うさぎんちゃく<br>サイト制作者のオリジナルキャラクター。白いうさぎの巾着に、ピンクのリボン。</dd><dt>曲</dt><dd>POYO POP · 128 BPM · F major<br>オリジナル作曲 / シンセサイザー演奏</dd></dl>
     <p class="credit">着想：<a href="https://aidn.jp/zundaroe/" target="_blank" rel="noreferrer">ずんだロエ / daniwell</a></p>

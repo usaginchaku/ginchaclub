@@ -30,4 +30,4 @@ for (const privatePath of ['.env', 'package.json', 'server.mjs', 'tools/compose.
   const response = await request(new URL(privatePath, base));
   assert.equal(response.status, 404, `Unexpected deployed file: ${privatePath}`);
 }
-console.log('Public checks passed: HTTPS redirect, HSTS, CSP, all 9 file hashes, and 5 excluded paths.');
+console.log(`Public checks passed: HTTPS redirect, HSTS, CSP, all ${PUBLIC_FILES.length} file hashes, and 5 excluded paths.`);

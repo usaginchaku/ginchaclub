@@ -1,4 +1,5 @@
 import { BEAT, LOOP_BEATS, LOOP_STEPS, SONG_BEATS, STEPS_PER_BEAT, STEP_SECONDS, mod, nextGridTick, recordHit } from './rhythm.js';
+import { SOUNDS, ROLL_SOUND } from './sounds.js';
 
 const NOTES = [77, 81, 84, 86, 84, 81, 79, 76];
 const frequency = note => 440 * 2 ** ((note - 69) / 12);
@@ -95,7 +96,20 @@ export class SoundEngine {
 
   get beat() {
     if (!this.playing) return this.offset / BEAT;
-    return Math.max(0, (this.context.currentTime - this.startedAt) / BEAT);
+    return Math.max(0, (this.playbackTime - this.startedAt) / BEAT);
+  }
+
+  get playbackTime() {
+    if (!this.context) return 0;
+    const stamp = this.context.getOutputTimestamp?.();
+    // Rendering runs ahead of the speakers. Use the output device's timestamp
+    // for visuals, while audio scheduling continues to use currentTime.
+    if (stamp?.contextTime > 0 && stamp.performanceTime > 0) {
+      const elapsed = Math.max(0, (performance.now() - stamp.performanceTime) / 1000);
+      return Math.min(this.context.currentTime, stamp.contextTime + elapsed);
+    }
+    const latency = this.context.outputLatency ?? this.context.baseLatency ?? 0;
+    return Math.max(0, this.context.currentTime - latency);
   }
 
   setVolume(value) {
@@ -108,7 +122,7 @@ export class SoundEngine {
   }
 
   tap(sound, position) {
-    if (!this.playing || !Number.isInteger(sound) || sound < 0 || sound > 3) return false;
+    if (!this.playing || !Number.isInteger(sound) || sound < 0 || sound >= SOUNDS.length) return false;
     const tick = nextGridTick(this.context.currentTime, this.startedAt);
     if (this.loopEnabled) recordHit(this.pattern, tick / STEPS_PER_BEAT, sound);
     return this.scheduleHit(sound, tick, 'live', position);
@@ -135,11 +149,11 @@ export class SoundEngine {
 
   stopVoice(voice) {
     const now = this.context.currentTime;
-    const { oscillator, gain, when } = voice;
+    const { source, gain, when } = voice;
     gain.gain.cancelScheduledValues(now);
     gain.gain.setValueAtTime(when > now ? 0 : gain.gain.value, now);
     gain.gain.linearRampToValueAtTime(0, now + .02);
-    oscillator.stop(when > now ? now : now + .025);
+    source.stop(when > now ? now : now + .025);
   }
 
   cancelLoopHits() {
@@ -187,28 +201,75 @@ export class SoundEngine {
 
   voice(sound, when, beat) {
     const ctx = this.context;
-    const oscillator = ctx.createOscillator();
+    const tone = SOUNDS[sound];
+    const noisy = tone.type === 'noise';
+    const source = noisy ? ctx.createBufferSource() : ctx.createOscillator();
     const gain = ctx.createGain();
     const panner = ctx.createStereoPanner();
     const note = NOTES[Math.floor(mod(beat, SONG_BEATS) / 2) % NOTES.length];
     const f = frequency(note);
-    const length = [.32, .48, .25, .37][sound];
-    oscillator.type = sound === 1 ? 'triangle' : 'sine';
-    const begin = [f * 1.65, f * 2, f * .7, f * .5][sound];
-    const end = [f, f * 2, f * .33, f * 2.5][sound];
-    oscillator.frequency.setValueAtTime(begin, when);
-    oscillator.frequency.exponentialRampToValueAtTime(end, when + length * .6);
+    const length = tone.duration;
+    let filter;
+    if (noisy) {
+      if (!this.noiseBuffer) {
+        this.noiseBuffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * .65), ctx.sampleRate);
+        const samples = this.noiseBuffer.getChannelData(0);
+        for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
+      }
+      source.buffer = this.noiseBuffer;
+      filter = ctx.createBiquadFilter();
+      filter.type = sound === 5 ? 'highpass' : 'bandpass';
+      filter.Q.value = .7;
+      filter.frequency.setValueAtTime(sound === 5 ? 1700 : 800, when);
+      if (sound === 7) filter.frequency.exponentialRampToValueAtTime(6000, when + length);
+    } else {
+      source.type = tone.type === 'roll' ? 'sine' : tone.type;
+      if (sound === ROLL_SOUND) {
+        for (let i = 0; i < 3; i++) {
+          const time = when + i * BEAT / 4;
+          source.frequency.setValueAtTime(280 - i * 35, time);
+          source.frequency.exponentialRampToValueAtTime(75, time + .09);
+        }
+      } else if (sound === 4) {
+        for (const [i, interval] of [1, 1.5, 2].entries()) {
+          source.frequency.setValueAtTime(f * interval, when + i * BEAT / 8);
+        }
+        filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 2600;
+      } else {
+        source.frequency.setValueAtTime(f * tone.pitch[0], when);
+        source.frequency.exponentialRampToValueAtTime(f * tone.pitch[1], when + length * .6);
+      }
+    }
     gain.gain.setValueAtTime(0, when);
-    gain.gain.linearRampToValueAtTime(sound === 1 ? .16 : .28, when + .006);
-    gain.gain.exponentialRampToValueAtTime(.001, when + length);
+    if (sound === ROLL_SOUND) {
+      for (let i = 0; i < 3; i++) {
+        const time = when + i * BEAT / 4;
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(tone.level * (1 - i * .2), time + .004);
+        gain.gain.exponentialRampToValueAtTime(.001, time + .09);
+      }
+    } else {
+      gain.gain.linearRampToValueAtTime(tone.level, when + .006);
+      gain.gain.exponentialRampToValueAtTime(.001, when + length);
+    }
     gain.gain.linearRampToValueAtTime(0, when + length + .01);
-    panner.pan.value = [-.13, .2, -.25, .25][sound];
-    oscillator.connect(gain).connect(panner).connect(this.limiter);
-    oscillator.start(when);
-    oscillator.stop(when + length + .02);
-    const voice = { oscillator, gain, when };
+    panner.pan.value = tone.pan;
+    if (filter) source.connect(filter).connect(gain);
+    else source.connect(gain);
+    gain.connect(panner).connect(this.limiter);
+    source.start(when);
+    source.stop(when + length + .02);
+    const voice = { source, gain, when };
     this.voices.add(voice);
-    oscillator.onended = () => { this.voices.delete(voice); oscillator.disconnect(); gain.disconnect(); panner.disconnect(); };
+    source.onended = () => {
+      this.voices.delete(voice);
+      source.disconnect();
+      filter?.disconnect();
+      gain.disconnect();
+      panner.disconnect();
+    };
     return voice;
   }
 }

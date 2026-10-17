@@ -7,6 +7,7 @@ export const PUBLIC_FILES = [
   'src/audio.js',
   'src/rhythm.js',
   'src/scene.js',
+  'src/sounds.js',
   'assets/favicon.svg',
   'assets/audio/poyo-pop.wav',
   'assets/audio/poyo-pop.mp3',

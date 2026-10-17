@@ -1,7 +1,9 @@
+import { BEAT } from './rhythm.js';
+import { SOUNDS, ROLL_SOUND } from './sounds.js';
+
 const INK = '#635550';
 const WHITE = '#fffdfb';
 const RIBBON = '#ed719c';
-const COLORS = [RIBBON, '#ba8e43', '#59a99a', '#9882bd'];
 
 // Parts are separate so the pouch, ears and little limbs can follow the beat.
 const EAR_LEFT = new Path2D('M-69-88C-83-133-87-190-61-205C-32-222-5-203-3-172L-1-91Z');
@@ -9,6 +11,7 @@ const EAR_RIGHT = new Path2D('M0-91L2-172C3-201 26-219 53-204C79-189 78-134 66-8
 const BAG = new Path2D('M-91-68C-118-82-126-113-106-120C-89-126-77-110-68-102C-41-123-17-126-3-107C20-126 42-118 51-102C75-115 99-116 106-101C113-86 106-74 94-67C116-48 132-18 128 18C123 64 85 81 2 82C-80 84-122 64-129 24C-135-13-116-47-91-68Z');
 const HAND = new Path2D('M0-12C-24-38-42-26-40-6C-36 12-22 20 0 17Z');
 const FOOT = new Path2D('M-21-9C-27 18-18 35 0 34C19 34 25 17 22-10Z');
+const POOP = new Path2D('M-9 6C-13 1-9-4-4-4C-5-8 1-8 0-13C8-10 11-3 8 0C16 9 1 14-9 6Z');
 
 export class UsaginchakuScene {
   constructor(canvas) {
@@ -17,6 +20,7 @@ export class UsaginchakuScene {
     this.width = 1;
     this.height = 1;
     this.particles = [];
+    this.pellets = [];
     this.impulseAt = -100;
     this.impulseSound = 0;
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -39,7 +43,13 @@ export class UsaginchakuScene {
     const now = performance.now() / 1000;
     this.impulseAt = now;
     this.impulseSound = sound;
-    if (!this.reduced.matches) {
+    if (sound === ROLL_SOUND) {
+      for (let i = 0; i < 3; i++) {
+        this.pellets.push({ born: now + i * BEAT / 4, direction: i % 2 ? -1 : 1, index: i });
+      }
+      this.pellets = this.pellets.slice(-24);
+    }
+    if (!this.reduced.matches && sound !== ROLL_SOUND) {
       for (let i = 0; i < 10; i++) {
         const angle = Math.PI * 2 * i / 10;
         this.particles.push({
@@ -191,8 +201,40 @@ export class UsaginchakuScene {
     this.part(HAND, 116, 20, -.18 - bounce * .18 - impulse * .8, -1);
     this.part(BAG);
     this.ribbon(sway * .025 + impulse * .1);
-    this.face(reacting ? this.impulseSound : -1, Math.sin(now * .73) > .997);
+    this.face(reacting ? SOUNDS[this.impulseSound].face : -1, Math.sin(now * .73) > .997);
     c.restore();
+  }
+
+  rollingPoop(cx, cy, scale, now) {
+    const c = this.ctx;
+    this.pellets = this.pellets.filter(p => now - p.born < 4);
+    for (const pellet of this.pellets) {
+      const age = now - pellet.born;
+      if (age < 0) continue;
+      const reduced = this.reduced.matches;
+      const travel = reduced ? 46 + pellet.index * 14 : age * 65;
+      const x = cx + pellet.direction * travel * scale;
+      const floor = cy + 113 * scale;
+      const hop = reduced ? 0 : Math.abs(Math.sin(age * 8)) * 10 * Math.exp(-age * 1.2);
+      c.save();
+      c.globalAlpha = Math.min(1, (4 - age) * 1.5);
+      c.fillStyle = '#8e627224';
+      c.beginPath();
+      c.ellipse(x, floor, 10 * scale, 3 * scale, 0, 0, Math.PI * 2);
+      c.fill();
+      c.translate(x, floor - (8 + hop) * scale);
+      c.scale(scale * .85, scale * .85);
+      if (!reduced) c.rotate(pellet.direction * age * 6);
+      c.fillStyle = '#b79171';
+      c.strokeStyle = '#785c49';
+      c.lineWidth = 2;
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      c.fill(POOP); c.stroke(POOP);
+      c.strokeStyle = '#ead4bc';
+      c.beginPath(); c.moveTo(-5, 0); c.quadraticCurveTo(0, 3, 5, 0); c.stroke();
+      c.restore();
+    }
   }
 
   draw(beat, playing, now) {
@@ -209,14 +251,16 @@ export class UsaginchakuScene {
     this.star(cx + 147 * scale, cy - 164 * scale - drift, 12 * scale, '#c58aa2', -.15);
     this.star(cx + 156 * scale, cy + 43 * scale, 5 * scale, '#c58aa2');
     this.mascot(cx, cy, scale, beat, playing, now);
+    // Keep the little droppings on the floor, visible between and beside the feet.
+    this.rollingPoop(cx, cy, scale, now);
     this.particles = this.particles.filter(p => now - p.born < .7);
     for (const p of this.particles) {
       const age = now - p.born;
       c.globalAlpha = Math.max(0, 1 - age / .7);
       const x = p.x + p.vx * age, y = p.y + p.vy * age + 90 * age * age;
-      if (p.sound === 1) this.star(x, y, p.r * 1.7, COLORS[p.sound], age * 2);
+      if (p.sound === 1 || p.sound === 5) this.star(x, y, p.r * 1.7, SOUNDS[p.sound].color, age * 2);
       else {
-        c.fillStyle = COLORS[p.sound]; c.beginPath();
+        c.fillStyle = SOUNDS[p.sound].color; c.beginPath();
         c.arc(x, y, p.r, 0, Math.PI * 2); c.fill();
       }
     }

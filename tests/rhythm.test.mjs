@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LOOP_STEPS, STEP_SECONDS, loopStep, nextGridTick, recordHit, sectionAt } from '../src/rhythm.js';
+import { SOUNDS } from '../src/sounds.js';
 
-test('sixteenth-note quantization wraps into the four-bar loop', () => {
+test('quarter-note recording follows the kick and wraps into the four-bar loop', () => {
   assert.equal(loopStep(0), 0);
-  assert.equal(loopStep(.26), 1);
+  assert.equal(loopStep(1), 1);
   assert.equal(loopStep(15.9), 0);
-  assert.equal(loopStep(16.5), 2);
-  assert.equal(loopStep(1000000.5), 2);
+  assert.equal(loopStep(16), 0);
+  assert.equal(loopStep(1000001), 1);
 });
 test('future grid includes the first note and handles exact subdivision boundaries', () => {
   assert.equal(nextGridTick(0, .025), 0);
@@ -15,10 +16,10 @@ test('future grid includes the first note and handles exact subdivision boundari
   assert.equal(nextGridTick(STEP_SECONDS, 0), 2);
   assert.equal(nextGridTick(STEP_SECONDS, 0, 0), 1);
 });
-test('rapid overdubs cannot grow beyond four voices per step', () => {
+test('rapid overdubs stay bounded with all eight voices', () => {
   const pattern = [];
-  for (let i = 0; i < 5000; i++) recordHit(pattern, i * .5, i % 4);
-  assert.ok(pattern.length <= LOOP_STEPS * 4);
+  for (let i = 0; i < 5000; i++) recordHit(pattern, i, i % SOUNDS.length);
+  assert.ok(pattern.length <= LOOP_STEPS * SOUNDS.length);
   recordHit(pattern, 0, 0);
   recordHit(pattern, 16, 0);
   assert.equal(pattern.filter(p => p.step === 0 && p.sound === 0).length, 1);
