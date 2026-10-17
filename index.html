@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ed">
+  <meta name="description" content="うさぎんちゃくと、ビートに合わせて音あそび。">
+  <title>ぎんちゃくらぶ</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 id="title">ぎんちゃくらぶ<span class="brand-dot" aria-hidden="true">.</span></h1>
+      <button class="icon-button" id="about-button" aria-label="あそび方と曲について"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.2"/></svg></button>
+    </header>
+    <main>
+      <section class="playground" aria-labelledby="title">
+        <button id="stage" class="stage" aria-label="うさぎんちゃくをタップして音を鳴らす"><canvas id="scene" aria-hidden="true"></canvas></button>
+        <div class="beat-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      </section>
+      <section class="instrument" aria-label="演奏コントロール">
+        <div class="transport">
+          <button id="play" class="play-button"><svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span id="play-label">あそぶ</span></button>
+          <div class="volume"><button class="icon-button" id="mute" aria-label="ミュート" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 4-5 5H3v6h3l5 5ZM16 8q4 4 0 8m3-11q7 7 0 14"/></svg></button><input id="volume" aria-label="音量" type="range" min="0" max="100" value="65"></div>
+        </div>
+        <div class="pad-row" role="group" aria-label="タップする音を選んで演奏">
+          <button class="pad selected" data-sound="0" aria-pressed="true"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M7 24q-3-15 14-15t14 15ZM11 27h20"/></svg><span>ぽよ</span></button>
+          <button class="pad" data-sound="1" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="m21 3 4 10 11 3-11 4-4 10-4-10-11-4 11-3Z"/></svg><span>きら</span></button>
+          <button class="pad" data-sound="2" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><circle cx="16" cy="20" r="9"/><circle cx="30" cy="8" r="5"/></svg><span>ぷく</span></button>
+          <button class="pad" data-sound="3" aria-pressed="false"><svg viewBox="0 0 42 32" aria-hidden="true"><path d="M5 25C10 25 10 7 20 7S30 25 37 5M28 5h9v9"/></svg><span>ぴゅん</span></button>
+        </div>
+        <div class="loop-row">
+          <button class="loop-button" id="loop" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></svg><span>くりかえす</span><i aria-hidden="true"></i></button>
+          <div class="loop-track" id="loop-track" aria-label="4小節のループ位置"></div>
+          <button class="clear-button" id="clear-loop" aria-label="重ねた音を消す" disabled>消す</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <dialog id="about" aria-labelledby="about-title">
+    <div class="dialog-top"><h2 id="about-title">ぎんちゃくらぶ</h2><button class="icon-button" id="close-about" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div>
+    <h3>あそび方</h3>
+    <p>うさぎんちゃくや、下の4つのボタンをタップ。音はビートに合わせて鳴ります。</p>
+    <p>「くりかえす」をオンにすると、タップした音を4小節ごとにくりかえします。「消す」で重ねた音をリセットできます。</p>
+    <dl><dt>キーボード</dt><dd>Space：再生・一時停止<br>A / S / D / F：演奏</dd></dl>
+    <h3>曲とキャラクター</h3>
+    <dl><dt>キャラクター</dt><dd>うさぎんちゃく<br>サイト制作者のオリジナルキャラクター。白いうさぎの巾着に、ピンクのリボン。</dd><dt>曲</dt><dd>POYO POP · 128 BPM · F major<br>オリジナル作曲 / シンセサイザー演奏</dd></dl>
+    <p class="credit">着想：<a href="https://aidn.jp/zundaroe/" target="_blank" rel="noreferrer">ずんだロエ / daniwell</a></p>
+    <a class="download-link" href="./assets/audio/poyo-pop.mp3" download="POYO-POP.mp3">曲を保存（MP3）<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 11v3h10v-3"/></svg></a>
+  </dialog>
+  <p id="notice" role="status" aria-live="polite" hidden></p>
+</body>
+</html>

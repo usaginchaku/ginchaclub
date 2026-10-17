@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+
+const base = 'http://127.0.0.1:4173';
+const home = await fetch(base);
+assert.equal(home.status, 200);
+assert.match(await home.text(), /ぎんちゃくらぶ/);
+const head = await fetch(`${base}/assets/audio/poyo-pop.wav`, { method: 'HEAD' });
+assert.equal(head.headers.get('accept-ranges'), 'bytes');
+const size = Number(head.headers.get('content-length'));
+assert.equal(size, 60 * 44100 * 4 + 44);
+const partial = await fetch(`${base}/assets/audio/poyo-pop.wav`, { headers: { Range: 'bytes=1000-1999' } });
+assert.equal(partial.status, 206);
+assert.equal((await partial.arrayBuffer()).byteLength, 1000);
+const suffix = await fetch(`${base}/assets/audio/poyo-pop.wav`, { headers: { Range: 'bytes=-500' } });
+assert.equal(suffix.status, 206);
+assert.equal((await suffix.arrayBuffer()).byteLength, 500);
+const invalid = await fetch(`${base}/assets/audio/poyo-pop.wav`, { headers: { Range: `bytes=${size}-` } });
+assert.equal(invalid.status, 416);
+const privateFile = await fetch(`${base}/package.json`);
+assert.equal(privateFile.status, 404);
+const mp3 = await fetch(`${base}/assets/audio/poyo-pop.mp3`);
+assert.equal(mp3.status, 200);
+assert.equal(mp3.headers.get('content-type'), 'audio/mpeg');
+console.log('HTTP checks passed: home, WAV length, byte range, suffix range, invalid range, private file, MP3.');

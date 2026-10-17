@@ -1,0 +1,20 @@
+{
+  "title": "POYO POP",
+  "bpm": 128,
+  "key": "F major",
+  "bars": 32,
+  "durationSeconds": 60.0,
+  "sampleRate": 44100,
+  "channels": 2,
+  "peakDbFS": -1.3,
+  "rmsDbFS": -14.08,
+  "scheduledSounds": 927,
+  "loopBoundaryDelta": 0.0662951188797685,
+  "samples": "All sounds synthesized by tools/compose.py; no external samples.",
+  "integratedLoudnessLUFS": -12.3,
+  "truePeakDbTP": -1.1,
+  "loudnessRangeLU": 3.8,
+  "pcmClippedSamples": 0,
+  "maximumAdjacentSampleDelta": 0.968109130859375,
+  "loopBoundaryDeltaPercentile": 88.13
+}
