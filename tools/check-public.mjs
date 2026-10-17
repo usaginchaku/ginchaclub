@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { PUBLIC_FILES } from './public-files.mjs';
 
-const base = new URL(process.argv[2] || 'https://usaginchaku.github.io/ginchakurabu/');
+const base = new URL(process.argv[2] || 'https://usaginchaku.github.io/ginchaclub/');
 assert.equal(base.protocol, 'https:');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const request = url => fetch(url, { signal: AbortSignal.timeout(30000), redirect: 'manual' });

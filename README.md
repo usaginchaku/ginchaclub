@@ -2,7 +2,7 @@
 
 オリジナル曲「POYO POP」に合わせて「うさぎんちゃく」をタップする、小さな音遊びサイト。
 
-公開サイト： https://usaginchaku.github.io/ginchakurabu/
+公開サイト： https://usaginchaku.github.io/ginchaclub/
 
 ## 起動
 
@@ -46,7 +46,7 @@ Node.js が入った環境で `npm start` を実行し、http://127.0.0.1:4173 �
 
 GitHub Pagesで配信します。`npm test` と `npm run build` が成功したmainブランチの変更だけを、GitHub Actionsから公開します。ビルドは `tools/public-files.mjs` の9ファイルと `.nojekyll` を `dist/` にまとめます。ワークスペース全体は配信しません。
 
-公開後は `node tools/check-public.mjs https://usaginchaku.github.io/ginchakurabu/` でHTTPS・全公開ファイルのSHA-256・非公開対象パスの404を確認できます。保護設定と制約、ロールバック手順は [SECURITY.md](SECURITY.md) に記載しています。
+公開後は `node tools/check-public.mjs https://usaginchaku.github.io/ginchaclub/` でHTTPS・全公開ファイルのSHA-256・非公開対象パスの404を確認できます。保護設定と制約、ロールバック手順は [SECURITY.md](SECURITY.md) に記載しています。
 
 ### 2026-10-17 検証
 
